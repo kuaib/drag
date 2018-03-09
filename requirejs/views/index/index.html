@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>requirejs第一个demo</title>
+	<!-- 
+		async：表明文件需要异步加载，避免网页失去响应
+		defer：IE不支持async，只支持defer 
+		data-main：指定网页程序的主模块，这个文件会第一个被require.js加载
+	 -->
+	<!-- <script src="../../assets/js/require.js" defer async="true" data-main="../../assets/js/main"></script> -->
+	<!-- 下面这个方式main.js中的配置就不起作用了(原因未知) -->
+	<!-- <script data-main="../../assets/js/main" src="../../assets/js/require.min.js"></script> -->
+	<script src="../../assets/js/require.js"></script>
+	<script src="../../assets/js/main.js"></script>
+</head>
+<body>
+	<script>
+		require(['jquery','demo'],function($) {
+			$(function() {
+
+			})
+		})
+	</script>
+</body>
+</html>

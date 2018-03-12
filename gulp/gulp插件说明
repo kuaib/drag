@@ -1,0 +1,21 @@
+"gulp-load-plugins": "^1.5.0"  ----自动加载插件
+"gulp-rename": "^1.2.2"        -----重命名文件流中的文件
+"gulp-uglify": "^3.0.0"        -----js文件压缩
+"gulp-minify-css":     -----css文件压缩
+"gulp-minify-html":     -----html文件压缩
+"gulp-jshint":     ----- js代码检查
+
+
+1、安装nodejs；
+
+2、执行npm init命令；
+
+3、全局和本地安装gulp；
+
+4、安装gulp插件；
+
+5、新建gulpfile.js文件；
+
+6、执行gulp命令。
+
+参考文档：http://www.ydcss.com/archives/18

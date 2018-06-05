@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>从一个容器拖拽到另一容器</title>
+    <script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+    <style>
+        .wrapper {
+            width: 500px;
+            height: 500px;
+            border: 1px solid #000;
+            position: relative;
+        }
+        .wrapper .list-item {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            /*如果有缩放，则不能使用该属性，会使缩放失真*/
+            transform: translate(-50%, -50%);
+        }
+        .list-item {
+            width: 100px;
+            height: 100px;
+            background: pink;
+        }
+    </style>
+</head>
+<body>
+    <div class="list">
+        <div class="list-item" draggable="true"></div>
+        <div class="list-item" draggable="true"></div>
+    </div>
+    <div class="wrapper"></div>
+    <script>
+        var dragDom = $(".list .list-item");  //拖拽元素   
+        var targetDom = $(".wrapper");        //目标元素
+        dragToTarget(dragDom,targetDom)
+ 
+
+        // 从一个容器拖拽到另一个容器
+        function dragToTarget(dragDom,targetDom) {
+            // dragDom.ondragstart = function (e) {
+                var $this = null;
+            dragDom.on('dragstart', function (e) {
+                $this = $(this);
+                //dataTransfer 承载体，贯穿整个拖拽周期，使用setData放置数据，getData获取数据
+                // js中使用(e.dataTransfer);
+                e.originalEvent.dataTransfer.effectAllowed = "move";
+                //e.target就是被拖拽的元素
+                // console.log(e.target)
+                e.originalEvent.dataTransfer.setData("text",e.target.id);
+            })
+                //浏览器禁止在元素上drop (禁止将其他元素拖到目标元素上放手)
+                //需要在 dragover 时阻值浏览器的默认事件才能出发  ondrop(drop:落下，投下)
+                targetDom.on('dragover',function (e) {
+                    //console.log(6,"在目标元素上移动");
+                    e.preventDefault();
+                    e.originalEvent.dataTransfer.dropEffect = "move";
+                })
+                targetDom.on('drop',function (e) {
+                    //console.log(7,"在目标元素上放手");
+                    //元素已经存在时，使用appendChild拼接到另一个元素中时，并且从原来父元素中删除
+                    
+                    //console.log(e.dataTransfer.getData("text"));
+                    // var eId = e.dataTransfer.getData("text");
+                    // console.log(eId)
+                    // target.appendChild(document.querySelector("#"+eId));
+                    targetDom.append($this);
+                    
+                })
+        }
+        
+
+    </script>
+</body>
+</html>

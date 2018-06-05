@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+</head>
+<body>
+	<style>
+		#div1{
+				width:200px;
+				height:200px;
+				background-color: red;
+				position:relative;
+				/*top:50%;
+				left:50%;*/
+			}
+		#div2{
+			width:10px;
+			height:10px;
+			background-color: black;
+			position:absolute;
+			right:0;
+			bottom:0;
+		}
+	</style>
+	<body>
+		<div id="div1">
+			<div id="div2"></div>
+		</div>
+		<script>
+			var oDiv=document.getElementById('div1');    
+			var oDiv2=document.getElementById('div2');    
+			// js写法
+			// oDiv2.onmousedown=function (ev){        
+			// 	ev=ev||event;    
+				
+			// 	var disX=ev.clientX-oDiv2.offsetLeft;        
+			// 	var disY=ev.clientY-oDiv2.offsetTop; 
+
+			// 	document.onmousemove=function (ev){  
+			// 	console.log(ev.clientX-disX,oDiv2.offsetWidth)            
+			// 		ev=ev||event;                        
+			// 		oDiv.style.width=ev.clientX-disX+oDiv2.offsetWidth+'px';            
+			// 		oDiv.style.height=ev.clientY-disY+oDiv2.offsetHeight+'px';        
+			// 	}      
+			// 	document.onmouseup=function (){            
+			// 		document.onmousemove = document.onmouseup = null;        
+			// 	} 
+			// }
+
+			// jqury写法
+			scaleDom($('#div2'),$(document))
+			function scaleDom(dragDom,wrapper) {
+				dragDom.on('mousedown',function (e){        
+					var disX=e.pageX - $(this).position().left;        
+					var disY=e.pageY - $(this).position().top;    
+					wrapper.on('mousemove',function (e){  
+						dragDom.parent().css({
+							width: e.pageX - disX + dragDom.width(),
+							height: e.pageY - disY + dragDom.height(),
+						})                      
+					})
+					wrapper.on('mouseup',function(){
+						$(this).off('mousemove')
+					})
+				})
+			}
+
+			
+		</script>
+	</body>
+</html>

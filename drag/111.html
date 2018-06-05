@@ -1,0 +1,299 @@
+<!doctype html>
+
+<html>
+
+<head>
+<meta charset="utf-8">
+<title>混合</title>
+<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+    /*定义滚动条高宽及背景 高宽分别对应横竖滚动条的尺寸*/
+    ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+        background-color: $backcolor;
+    }
+
+    /*定义滚动条轨道 内阴影+圆角*/
+    ::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 1px rgba(0, 0, 0, 0);
+        border-radius: 10px;
+        background-color: #f5f5f5;
+    }
+
+    /*定义滑块 内阴影+圆角*/
+    ::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+      -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .4);
+      background-color: #f5f5f5;
+    }
+    html,body {
+        height: 100%;
+        
+    }
+    body {
+        overflow-x: auto ;
+    }
+    *{
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    .list {
+        width: 250px;
+        height: 100%;
+        overflow-y: scroll;
+        margin-right: 30px;
+        border: 1px solid #aaa;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+    .list .drag-item {
+        position: relative;
+        margin: 10px auto;
+        left: 0 !important;
+        top:0 !important;
+    }
+    .drag-item {
+        width: 200px;
+        height: 100px;
+        cursor: move;
+        border: 1px solid #CCCCCC;
+        background: #fff;
+    }
+    .drag-item .coor { 
+        width: 10px; 
+        height: 10px;
+        overflow: hidden; 
+        cursor: se-resize; 
+        position: absolute; 
+        right: 0; bottom: 0; 
+        background-color: #09C; 
+    }
+    .drag-item .title {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 25px;
+        line-height: 25px;
+        color: #fff;
+        font-size: 12px;
+        text-align: center;
+        background-color: rgba(0,0,0,.5);
+     }
+    .wrapper .drag-item .title i {
+        cursor: pointer;
+        width: 25px;
+        height: 25px;
+        background: url(images/action-close.png) no-repeat center;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+    .wrapper {
+        width: 1024px;
+        height: 768px;
+        /*border: 1px solid #aaa; 边框占宽度一个像素*/
+        background: pink;
+        position: absolute;
+        left: 280px;
+        top: 0;
+    }
+    .wrapper .drag-item {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -100px;
+        margin-top: -50px;
+    }
+    /*.wrapper .drag-item .title {
+        display: none
+    }*/
+
+    body { background-color: #F3F3F3;}
+</style>
+</head>
+<body>
+    <div class="list">
+        <div class="drag-item" data-type="orderList" draggable="true">
+            <div class="title">
+                <span>订单列表</span>
+                <i></i>
+            </div>
+            <div class="coor"></div>
+        </div>
+        <div class="drag-item" data-type="tbjd" draggable="true">
+            <div class="title">
+                <span>淘宝京东</span>
+                <i></i>
+            </div>
+            <div class="coor"></div>
+        </div>
+        <div class="drag-item" data-type="product" draggable="true">
+            <div class="title">
+                <span>商品</span>
+                <i></i>
+            </div>
+            <div class="coor"></div>
+        </div>
+    </div>
+    <div class="wrapper"></div>
+</body>
+    <script>
+    	var screenW = 1024;
+    	var screenH = 768;
+        var dragDom = $(".list .drag-item");  //拖拽元素
+        var initWidth = dragDom.outerWidth();      //拖拽元素初始宽度(为了移动和放大的时候使用)
+        var initHeight = dragDom.outerHeight();    //拖拽元素初始宽度(为了移动和放大的时候使用)
+        var targetDom = $(".wrapper");        //目标元素
+        var allDomObj = {};  // 所有元素排版集合
+
+        dragToTarget(dragDom,targetDom);
+
+        // $('.wrapper').css({width:window.innerWidth,height: window.innerHeight})
+        // $(window).resize(function() {
+        //     $('.wrapper').css({width:window.innerWidth,height: window.innerHeight})
+        // })
+
+        $('.drag-item .title i').on('click',function() {
+        	var dragDom = $(this).parent().parent();
+            $('.list').append(dragDom.css({width: initWidth,height: initHeight}));
+            delete allDomObj[dragDom.data('type')];
+            console.log(allDomObj)
+        })
+
+        function initDrag(wrapper,dragJQ,initWidth,initHeight) {
+            var halfW = initWidth / 2 || 0;  // 可拖动容器的宽度的一半
+            var halfH = initHeight / 2 || 0; // 可拖动容器的高度的一半
+            dragJQ.on('mousedown',function(e) {
+                var $this = $(this);
+                // box距离父元素的左上角距离(offset()距离可视窗口)
+                var position = $(this).position();
+                // wrapper距离浏览器的距离
+                var wrapperP = {'x': e.pageX - position.left, 'y': e.pageY - position.top};
+                wrapper.on('mousemove',function(e) {
+                    if($this) {
+                        var maxH = wrapper.height() - $this.height();
+                        var maxW = wrapper.width() - $this.width();
+                        // 小盒子距离父元素
+                        $this.css({
+                            'top': e.pageY - wrapperP.y <= initHeight/2 ? initHeight/2 : e.pageY - wrapperP.y > maxH + initHeight/2 ? maxH + initHeight/2 : e.pageY - wrapperP.y,
+                            'left': e.pageX - wrapperP.x <= initWidth/2 ? initWidth/2 :  e.pageX - wrapperP.x > maxW + initWidth/2 ? maxW + initWidth/2 : e.pageX - wrapperP.x,
+                        });
+                    }    
+                })
+                $this.on('mouseup',function(e) {
+                    //获取元素左上角在容器中的绝对位置
+                    // console.log($this.offset().left - 280,$this.offset().top);
+                    changeObj($this,'position')
+                    $this.off('mouseup');  // 防止mouseup事件多次触发
+                    wrapper.off('mousemove');
+                    return;
+                })
+                // 防止拉伸到外部再回来的时候元素依然挪动位置
+                wrapper.on('mouseleave',function(){
+                    wrapper.off('mousemove')
+                })
+                
+            })
+            scaleDom(dragJQ.find('.coor'),targetDom,initWidth,initHeight)       
+        }
+
+
+        // 从一个容器拖拽到另一个容器
+        function dragToTarget(dragDom,targetDom) {
+            var $this = null;
+            dragDom.on('dragstart', function (e) {
+                $this = $(this);
+                e.originalEvent.dataTransfer.effectAllowed = "move";
+                e.originalEvent.dataTransfer.setData("text",e.target.id);
+            })
+                //浏览器禁止在元素上drop (禁止将其他元素拖到目标元素上放手)
+                //需要在 dragover 时阻值浏览器的默认事件才能出发  ondrop(drop:落下，投下)
+                targetDom.on('dragover',function (e) {
+                    e.preventDefault();
+                    e.originalEvent.dataTransfer.dropEffect = "move";
+                })
+                targetDom.on('drop',function (e) {
+                    $this.removeAttr('draggable');
+                    targetDom.append($this);
+
+                    initDrag($('.wrapper'),$this,initWidth,initHeight);
+                    changeObj($this)
+                })
+        }
+
+        // 拖拽右下角放大缩小元素
+        // (dragDom：拖动的右下角元素; wrapper: 可滑动的大元素;initWidth,initHeight:元素宽高)
+        function scaleDom(dragDom,wrapper,initWidth,initHeight) {
+            dragDom.on('mousedown',function (e){  
+                event.stopPropagation();  // 阻止事件捕获   
+                var halfW = initWidth / 2 || 0;
+                var halfH = initHeight / 2 || 0;
+                var disX = e.pageX;        
+                var disY = e.pageY;
+                var w = dragDom.parent().outerWidth();
+                var h = dragDom.parent().outerHeight();
+                wrapper.on('mousemove',function (e){  
+                    dragDom.parent().css({
+                        width: (e.pageX - disX + w) < 80 ? 80 : ((e.pageX - disX + w) > (wrapper.width() - dragDom.parent().position().left + halfW) ? (wrapper.width() - dragDom.parent().position().left + halfW) : (e.pageX - disX + w)),
+                        
+                        height: (e.pageY - disY + h) < 80 ? 80 : ((e.pageY - disY + h) > (wrapper.height() - dragDom.parent().position().top + halfH) ? (wrapper.height() - dragDom.parent().position().top + halfH) : (e.pageY - disY + h)),
+                    })                      
+                })
+                wrapper.on('mouseup',function(){
+                    $(this).off('mousemove')
+                })
+            })
+            dragDom.on('mouseup',function(){
+            	changeObj(dragDom.parent(), 'scal')
+            })
+        }
+
+        // 改变元素宽高或位置时重新设置allDomObj
+        function changeObj($this,changeType) {
+        	var type = $this.data('type');
+        	// 初次改变
+        	if(!allDomObj[type]) {
+	            allDomObj[type] = {
+	            	type: type,
+	            	local: [getPercent($this.offset().left - 280,'w'),getPercent($this.offset().top,'h')],
+	            	size: [getPercent(initWidth,'w'), getPercent(initHeight,'h')]
+	            }
+        	} else {
+        		if(changeType == 'scal') {
+        			allDomObj[type].size = [getPercent($this.outerWidth(),'w'), getPercent($this.outerHeight(),'h')];
+        		} else {
+        			allDomObj[type].local =[getPercent($this.offset().left - 280,'w'),getPercent($this.offset().top,'h')];
+        		}
+        	}
+        	console.log($this.offset().left - 280,$this.offset().top)
+        	console.log(allDomObj)
+        }
+
+        // 转换成百分比
+        function getPercent(num, type) {
+        	if(typeof num == 'number') {
+        		if(type == 'w') {
+        			return ((num / screenW) * 100).toFixed(2);
+        		} else {
+        			return ((num / screenH) * 100).toFixed(2);
+        		}
+        	}
+        }
+ 
+    </script>
+</html> 
+
+<!-- 
+注意事项：
+    1. draggable="true"：拖到容器中的元素必须去掉该属性，否则鼠标移动的时候元素也会跟着走
+    2. transform：元素居中定位的时候不要使用该属性，否则在放大元素的时候会失真
+
+ -->
+
+
+

@@ -1,0 +1,125 @@
+<!doctype html>
+
+<html>
+
+<head>
+<meta charset="utf-8">
+<title>在容器里面随意拖动</title>
+<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.wrapper {
+    width: 800px;
+    height: 800px;
+    border: 1px solid #000;
+    position: relative;
+    margin: 0 auto;
+}
+#box { width: 200px; height: 100px; cursor: move;  top: 30px; left: 30px; background-color: #FFF; border: 1px solid #CCCCCC;  -webkit-box-shadow: 10px 10px 25px #ccc;-moz-box-shadow: 10px 10px 25px #ccc;box-shadow: 10px 10px 25px #ccc;position: absolute;}
+
+#box1 { width: 100px; height: 100px; cursor: move; top: 130px; left: 230px; background-color: #FFF; border: 1px solid #CCCCCC;  -webkit-box-shadow: 10px 10px 25px #ccc;-moz-box-shadow: 10px 10px 25px #ccc;box-shadow: 10px 10px 25px #ccc;position: absolute;}
+
+.coor { width: 10px; height: 10px; overflow: hidden; cursor: se-resize; position: absolute; right: 0; bottom: 0; background-color: #09C; }
+.wrapper .list-item {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50% -50%);
+}
+
+body { background-color: #F3F3F3; }
+
+</style>
+
+</head>
+
+
+
+<body>
+  <div class="wrapper">
+    <div id="box" class="drag-item">
+      <div class="coor"></div>
+    </div>
+    <div id="box1" class="drag-item">
+      <div class="coor" ></div>
+    </div>
+</div>
+
+
+
+</body>
+  <script>
+    initDrag($('.wrapper'),'.wrapper .drag-item')
+
+    // wrapper: 最外层的盒子，jQuery元素；
+    // dragDomSelector： 被拖动的盒子选择器(字符串)
+    function initDrag(wrapper,dragDomSelector) {
+      var config = {
+        'wrapper': wrapper,   // 包裹元素
+        'wrapperW': wrapper.width(),   // 包裹元素-宽
+        'wrapperH': wrapper.height(),  // 包裹元素-高
+      }
+      // 给wrapper的鼠标添加移动和松开事件
+      config.wrapper.mousemove(function(e) {
+        if (!!config.move) {
+          var posix = !config.move_target ? {'x': 0, 'y': 0} : config.move_target.posix,
+            callback = config.call_down || function() {
+              var maxH = config.wrapperH - $(config.move_target).height();
+              var maxW = config.wrapperW - $(config.move_target).width();
+              // 小盒子距离父元素
+              $(config.move_target).css({
+                'top': e.pageY - posix.y <= 0 ? 0 : e.pageY - posix.y > maxH ? maxH : e.pageY - posix.y,
+                'left': e.pageX - posix.x <=0 ? 0 :  e.pageX - posix.x > maxW ? maxW : e.pageX - posix.x
+              });
+            };
+
+          callback.call(config, e, posix);
+        }
+      }).mouseup(function(e) {
+        if (!!config.move) {
+          var callback = config.call_up || function(){};
+          callback.call(config, e);
+          $.extend(config, {
+            'move': false,
+            'move_target': null,
+            'call_down': false,
+            'call_up': false
+          });
+        }
+      });
+
+      // 给盒子添加鼠标按下事件，右下角方块添加鼠标按下事件
+      console.log($(dragDomSelector))
+      $('' + dragDomSelector).on('mousedown',function(e) {
+          // box距离父元素的左上角距离(offset()距离可视窗口)
+          var position = $(this).position();
+          // wrapper距离浏览器的距离
+          this.posix = {'x': e.pageX - position.left, 'y': e.pageY - position.top}; 
+          $.extend(config, {'move': true, 'move_target': this});
+
+      })
+      $(dragDomSelector + ' .coor',).on('mousedown',  function(e) {
+          var posix = {
+                  'w': $(dragDomSelector).width(), 
+                  'h': $(dragDomSelector).height(), 
+                  'x': e.pageX, 
+                  'y': e.pageY
+              };
+          
+          $.extend(config, {'move': true, 'call_down': function(e) {
+              var currentW = (e.pageX - posix.x + posix.w) > (config.wrapperW - $(dragDomSelector).position().left) ? (config.wrapperW - $(dragDomSelector).position().left) : ((e.pageX - posix.x + posix.w) < 30 ? 30 : (e.pageX - posix.x + posix.w));
+              var currentH = (e.pageY - posix.y + posix.h) > (config.wrapperH - $(dragDomSelector).position().top) ? (config.wrapperH -  $(dragDomSelector).position().top) : ((e.pageY - posix.y + posix.h) < 30 ? 30 : (e.pageY - posix.y + posix.h));
+              $(dragDomSelector).css({
+                  // 鼠标停止位置 - 鼠标起始位置 + 元素原来的宽度
+                  'width': currentW,
+                  'height': currentH
+              });
+          }});
+          return false;
+      });
+    }
+  </script>
+</html> 
+
+
+
